@@ -4,13 +4,13 @@ using Microsoft.AspNetCore.Http;
 var builder = WebApplication.CreateBuilder(args);
 var app = builder.Build();
 //Start service discovery at /.well-known/terraform.json
-app.MapGet(".well-known/terraform.json", (string @namespace, string name, string system, string version, HttpResponse response) => 
+app.MapGet(".well-known/terraform.json", (string @namespace, string name, string system, string version) => 
 {
     //temporarily implement constant values.
-    return Results.Json(@"{{
+    return Results.Json(@"{
         ""modules.v1"": ""/v1/modules"",
         ""providers.v1"": ""/v1/providers"",
-    }}");
+    }");
 });
 
 //Start module registry system.
@@ -39,12 +39,11 @@ app.MapGet("/v1/modules/{namespace}/{name}/{system}/versions", (string @namespac
     //temporarily implement constant values.
     return Results.Json(json);
 });
-app.MapGet("/v1/modules/{namespace}/{name}/{system}/{version}/download", (string @namespace, string name, string system, string version, HttpResponse response) => 
+app.MapGet("/v1/modules/{namespace}/{name}/{system}/{version}/download", (string @namespace, string name, string system, string version, HttpContext httpContext) => 
 {
     //temporarily implement constant values.
-    response.Headers.Add("X-Terraform-Get", "https://api.github.com/repos/hashicorp/terraform-aws-consul/tarball/v0.0.1//*?archive=tar.gz");
-    response.StatusCode = StatusCodes.Status204NoContent;
-    return response;
+    httpContext.Response.Headers.Add("X-Terraform-Get", "https://api.github.com/repos/hashicorp/terraform-aws-consul/tarball/v0.0.1//*?archive=tar.gz");
+    return Results.NoContent;
 });
 
 //start provider api
